@@ -17,7 +17,7 @@ DHT_Pin = 5
 red_LED = Pin(red_LED_pin, Pin.OUT)
 yellow_LED = Pin(yellow_LED_pin, Pin.OUT)
 blue_LED = Pin(blue_LED_pin, Pin.OUT)
-sensor = dht.DHT22(DHT_Pin)
+sensor = dht.DHT11(DHT_Pin)
 
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
