@@ -48,9 +48,9 @@ def thread(client_connection, client_id):
                 temperature, humidity = map(float, decode_message.split(","))
                 print(f"Client {client_id}: Temp={temperature}°C, Humidity={humidity}%")
                 # Determine if readings are normal or low or high or abnormal
-                temperature = check_temperature(temperature)
-                humidity = check_humidity(humidity)
-                response = temperature + "," + humidity
+                temperature_status = check_temperature(temperature)
+                humidity_status = check_humidity(humidity)
+                response = temperature_status + "," + humidity_status
                 # Send the response back to the client
                 client_connection.send(response.encode('utf-8'))
                 print(f"Sent to Client {client_id}: {response}")
