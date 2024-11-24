@@ -13,11 +13,13 @@ red_LED_pin = 2 # Temperature too high
 yellow_LED_pin = 4  # Temperature too low
 blue_LED_pin = 0 # Abnormal Humidity
 DHT_Pin = 5
+DHT_Pin2 = 5
 
 red_LED = Pin(red_LED_pin, Pin.OUT)
 yellow_LED = Pin(yellow_LED_pin, Pin.OUT)
 blue_LED = Pin(blue_LED_pin, Pin.OUT)
-sensor = dht.DHT11(DHT_Pin)
+sensor_temperature = dht.DHT11(DHT_Pin)
+sensor_humidity = dht.DHT11(DHT_Pin2)
 
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
@@ -50,9 +52,10 @@ def main():
     try:
         while True:
             try:
-                sensor.measure()
-                temperature = sensor.temperature
-                humidity = sensor.humidity
+                sensor_temperature.measure()
+                sensor_humidity.measure()
+                temperature = sensor_temperature.temperature
+                humidity = sensor_humidity.humidity
                 print(f"Temperature: {temperature}°C, Humidity: {humidity}%")
                 send_readings(client_socket, temperature, humidity)
                 response = client_socket.recv(1024).decode()
