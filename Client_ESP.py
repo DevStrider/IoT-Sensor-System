@@ -83,7 +83,7 @@ def main():
                 if len(status) == 2:
                     red_LED.value(status[0] == "HIGH")
                     yellow_LED.value(status[0] == "LOW")
-                    blue_LED.value(status[1] == "HIGH")
+                    blue_LED.value(status[1] == "ABNORMAL")
 
                 time.sleep(CONFIG["read_interval"])
             except Exception as e:
