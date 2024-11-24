@@ -27,7 +27,7 @@ def check_humidity(humidity):
     """Check if humidity is normal or high."""
     if normal_humidity_range[0] <= humidity <= normal_humidity_range[1]:
         return "NORMAL"
-    return "HIGH"
+    return "ABNORMAL"
 
 def handle_client(client_connection, client_id):
     """Handle communication with a single client."""
