@@ -4,38 +4,52 @@ import network
 import dht
 from machine import Pin
 
-wifi_ssid = "<WIFI_SSID>"
-wifi_pass = "<WIFI_PASS>"
-server_ip = "<SERVER_IP>"
-server_port = "<SERVER_PORT>"
-read_interval = 20
-red_LED_pin = 2 # Temperature too high
-yellow_LED_pin = 4  # Temperature too low
-blue_LED_pin = 0 # Abnormal Humidity
-DHT_Pin = 5
-DHT_Pin2 = 5
+# Configuration
+CONFIG = {
+    "wifi_ssid": "WE6F610F",
+    "wifi_pass": "0f08560c",
+    "server_ip": "192.168.1.2",
+    "server_port": 5604,
+    "red_LED_pin": 2,
+    "yellow_LED_pin": 4,
+    "blue_LED_pin": 0,
+    "DHT_temperature_pin": 5,
+    "DHT_humidity_pin": 16,
+    "read_interval": 20,
+    "max_retries": 5
+}
 
-red_LED = Pin(red_LED_pin, Pin.OUT)
-yellow_LED = Pin(yellow_LED_pin, Pin.OUT)
-blue_LED = Pin(blue_LED_pin, Pin.OUT)
-sensor_temperature = dht.DHT11(DHT_Pin)
-sensor_humidity = dht.DHT11(DHT_Pin2)
+# Setup
+red_LED = Pin(CONFIG["red_LED_pin"], Pin.OUT)
+yellow_LED = Pin(CONFIG["yellow_LED_pin"], Pin.OUT)
+blue_LED = Pin(CONFIG["blue_LED_pin"], Pin.OUT)
+sensor_temperature = dht.DHT11(CONFIG["DHT_temperature_pin"])
+sensor_humidity = dht.DHT11(CONFIG["DHT_humidity_pin"])
 
+# Functions
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    if not wlan.connected():
+    if not wlan.isconnected():
         print("Connecting to WIFI...")
-        wlan.connect(wifi_ssid, wifi_pass)
-        while not wlan.connected():
+        wlan.connect(CONFIG["wifi_ssid"], CONFIG["wifi_pass"])
+        while not wlan.isconnected():
             time.sleep(1)
-    print("Network Config:", wlan.ifconfig())
+            print("Still not connected...")
+    print("Connected to WIFI. Network Config:", wlan.ifconfig())
 
 def connect_to_server():
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((server_ip, server_port))
-    print("Connected to server:", server_ip)
-    return client_socket
+    for attempt in range(CONFIG["max_retries"]):
+        try:
+            client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client_socket.connect((CONFIG["server_ip"], CONFIG["server_port"]))
+            print("Connected to server:", CONFIG["server_ip"])
+            return client_socket
+        except Exception as e:
+            print(f"Connection attempt {attempt + 1} failed:", e)
+            time.sleep(5)
+    print("Failed to connect to server.")
+    return None
 
 def send_readings(client_socket, temperature, humidity):
     try:
@@ -44,45 +58,48 @@ def send_readings(client_socket, temperature, humidity):
         print("Sent to server:", message)
     except Exception as e:
         print("Error sending data:", e)
-        client_socket.close()
-        return None
+
+# Main function
 def main():
     connect_wifi()
     client_socket = connect_to_server()
+    if not client_socket:
+        return
+
     try:
         while True:
             try:
                 sensor_temperature.measure()
                 sensor_humidity.measure()
-                temperature = sensor_temperature.temperature
-                humidity = sensor_humidity.humidity
+                temperature = sensor_temperature.temperature()
+                humidity = sensor_humidity.humidity()
                 print(f"Temperature: {temperature}°C, Humidity: {humidity}%")
                 send_readings(client_socket, temperature, humidity)
+
                 response = client_socket.recv(1024).decode()
                 print("Server response:", response)
-                temperature_status , humidity_status = response.split(",")
-                if temperature_status == "NORMAL":
-                    red_LED.value(1)
-                    yellow_LED.value(0)
-                elif temperature_status == "LOW":
-                    red_LED.value(0)
-                    yellow_LED.value(1)
-                elif temperature_status == "HIGH":
-                    red_LED.value(1)
-                    yellow_LED.value(0)
 
-                if humidity_status == "ABNORMAL":
-                    blue_LED.value(1)
-                else:
-                    blue_LED.value(0)
-                time.sleep(read_interval)
+                status = response.split(",")
+                if len(status) == 2:
+                    red_LED.value(status[0] == "HIGH")
+                    yellow_LED.value(status[0] == "LOW")
+                    blue_LED.value(status[1] == "HIGH")
+
+                time.sleep(CONFIG["read_interval"])
             except Exception as e:
-                print("Error:", e)
+                print("Error in loop:", e)
                 client_socket.close()
-                client_socket = connect_to_server()  # Reconnect to server if needed
+                client_socket = connect_to_server()
     except KeyboardInterrupt:
         print("Connection lost...")
-        client_socket.send('CLOSE SOCKET'.encode('utf-8'))  # Notify the server
-        client_socket.close()
+        if client_socket:
+            try:
+                client_socket.send('CLOSE SOCKET'.encode('utf-8'))
+            except Exception as e:
+                print("Error notifying server:", e)
+            finally:
+                client_socket.close()
+
 if __name__ == "__main__":
     main()
+
