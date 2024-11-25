@@ -23,8 +23,7 @@ CONFIG = {
 red_LED = Pin(CONFIG["red_LED_pin"], Pin.OUT)
 yellow_LED = Pin(CONFIG["yellow_LED_pin"], Pin.OUT)
 blue_LED = Pin(CONFIG["blue_LED_pin"], Pin.OUT)
-sensor_temperature = dht.DHT11(CONFIG["DHT_temperature_pin"])
-sensor_humidity = dht.DHT11(CONFIG["DHT_humidity_pin"])
+sensor= dht.DHT11(CONFIG["DHT_temperature_pin"])
 
 # Functions
 def connect_wifi():
@@ -69,10 +68,9 @@ def main():
     try:
         while True:
             try:
-                sensor_temperature.measure()
-                sensor_humidity.measure()
-                temperature = sensor_temperature.temperature()
-                humidity = sensor_humidity.humidity()
+                sensor.measure()
+                temperature = sensor.temperature()
+                humidity = sensor.humidity()
                 print(f"Temperature: {temperature}°C, Humidity: {humidity}%")
                 send_readings(client_socket, temperature, humidity)
 
