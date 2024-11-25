@@ -3,12 +3,12 @@ import threading
 
 # Define normal ranges
 normal_temp_range = (20, 30)  # Normal temperature range (20°C to 30°C)
-normal_humidity_range = (30, 70)  # Normal humidity range (30% to 70%)
+normal_humidity_range = (40, 70)  # Normal humidity range (40% to 70%)
 
 # Create the server socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 5604
-server_socket.bind(('127.0.0.1', port))  # Bind to localhost
+server_socket.bind(('192.168.53.220', port))  # Bind to localhost
 server_socket.listen(100)  # Listen for up to 100 connections
 
 # Dictionary to store client connections and their IDs
@@ -27,7 +27,7 @@ def check_humidity(humidity):
     """Check if humidity is normal or high."""
     if normal_humidity_range[0] <= humidity <= normal_humidity_range[1]:
         return "NORMAL"
-    return "HIGH"
+    return "ABNORMAL"
 
 def handle_client(client_connection, client_id):
     """Handle communication with a single client."""
