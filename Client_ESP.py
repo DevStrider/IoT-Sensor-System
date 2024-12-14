@@ -14,7 +14,7 @@ CONFIG = {
     "yellow_LED_pin": 4,
     "blue_LED_pin": 0,
     "DHT": 5,
-    "read_interval": 5,
+    "read_interval": 5   ,
     "max_retries": 5
 }
 
@@ -99,5 +99,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
