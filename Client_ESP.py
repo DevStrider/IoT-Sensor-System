@@ -6,16 +6,15 @@ from machine import Pin
 
 # Configuration
 CONFIG = {
-    "wifi_ssid": "WE6F610F",
-    "wifi_pass": "0f08560c",
-    "server_ip": "192.168.1.2",
+    "wifi_ssid": "Abdulrahman",
+    "wifi_pass": "3882345ABDU",
+    "server_ip": "192.168.53.220",
     "server_port": 5604,
     "red_LED_pin": 2,
     "yellow_LED_pin": 4,
     "blue_LED_pin": 0,
-    "DHT_temperature_pin": 5,
-    "DHT_humidity_pin": 16,
-    "read_interval": 20,
+    "DHT": 5,
+    "read_interval": 5   ,
     "max_retries": 5
 }
 
@@ -23,7 +22,7 @@ CONFIG = {
 red_LED = Pin(CONFIG["red_LED_pin"], Pin.OUT)
 yellow_LED = Pin(CONFIG["yellow_LED_pin"], Pin.OUT)
 blue_LED = Pin(CONFIG["blue_LED_pin"], Pin.OUT)
-sensor= dht.DHT11(CONFIG["DHT_temperature_pin"])
+sensor = dht.DHT11(CONFIG["DHT"])
 
 # Functions
 def connect_wifi():
